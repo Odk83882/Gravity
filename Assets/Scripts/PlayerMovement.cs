@@ -16,13 +16,26 @@ public class PlayerMovement : MonoBehaviour
     private float normalBias = 0.01f;
     [Range(0, 5f)] public float fallLongMult = 0.85f;
     [Range(0, 5f)] public float fallShortMult = 1.55f;
-
+    public static PlayerMovement instance;
     [SerializeField]
     private LayerMask groundLayer;
 
     [SerializeField]
     private float groundRayDistance = 0.1f;
 
+    public bool isUpsideDown;
+
+    private void Awake()
+    {
+        if (instance != null && instance != this)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            instance = this;
+        }
+    }
     void Start()
     {
         rb2d = GetComponent<Rigidbody2D>();
@@ -95,11 +108,20 @@ public class PlayerMovement : MonoBehaviour
 
     bool IsGrounded()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position - new Vector3(0f, 1f, 0f), Vector2.down, groundRayDistance, groundLayer);
+        Vector2 Vector2Direction = Vector2.down;
+        if (isUpsideDown == true)
+        {
+            Vector2Direction = Vector2.up;
+        }
+        else
+        {
+            Vector2Direction = Vector2.down;
+        }
+        RaycastHit2D hit = Physics2D.Raycast(transform.position - new Vector3(0f, 1f, 0f), Vector2Direction, groundRayDistance, groundLayer);
         Debug.DrawRay(transform.position - new Vector3(0f, 1f, 0f), Vector2.down * groundRayDistance, Color.red);
         return hit.collider != null;
     }
-        bool CastAndMove(Vector2 velocity, Vector2 remainingDelta, out Vector2 newVelocity, out Vector2 newRemaining)
+    bool CastAndMove(Vector2 velocity, Vector2 remainingDelta, out Vector2 newVelocity, out Vector2 newRemaining)
     {
         Vector3 opos = transform.position;
 
