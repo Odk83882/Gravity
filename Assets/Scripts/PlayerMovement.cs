@@ -49,6 +49,7 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
     // Read input
+        animator.SetBool("IsGrounded", IsGrounded());
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         float verticalInput = Input.GetAxisRaw("Vertical");
     
@@ -63,6 +64,8 @@ public class PlayerMovement : MonoBehaviour
     
     // Check if grounded
         isGrounded = IsGrounded();
+
+        
 
     // Jumping
         if (Input.GetButtonDown("Jump") && isGrounded)
@@ -79,6 +82,7 @@ public class PlayerMovement : MonoBehaviour
     // Apply air friction
         if (!isGrounded)
         {
+            
             ApplyAirFriction();
         }
     }
@@ -134,6 +138,7 @@ public class PlayerMovement : MonoBehaviour
         Debug.DrawRay(transform.position - new Vector3(0f, 1f, 0f), Vector2.down * groundRayDistance, Color.red);
         return hit.collider != null;
     }
+    
     bool CastAndMove(Vector2 velocity, Vector2 remainingDelta, out Vector2 newVelocity, out Vector2 newRemaining)
     {
         Vector3 opos = transform.position;
