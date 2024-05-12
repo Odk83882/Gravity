@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class GravitySwitch: MonoBehaviour
 {
+
     private Rigidbody2D rb2D;
     public float gravityMultiplier = 1.0f;
     public static GravitySwitch instance;
@@ -39,11 +40,18 @@ public class GravitySwitch: MonoBehaviour
 
     void GravityShift()
     {
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         gravityMultiplier *= -1f;
         PlayerMovement.instance.jumpVelocity = -PlayerMovement.instance.jumpVelocity;
         if (isToggled)
+        {
             PlayerMovement.instance.isUpsideDown = true;
+            spriteRenderer.flipY = true;
+        }
         else
+        {
             PlayerMovement.instance.isUpsideDown = false;
-    }
+            spriteRenderer.flipY = false;
+        }
+    }   
 }

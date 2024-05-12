@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class Dash : MonoBehaviour
 {
+    public Animator animator;
     private float horizontal;
     private float speed = 8f;
 
@@ -29,6 +30,7 @@ public class Dash : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift) && canDash)
         {
             StartCoroutine(Dashing());
+
         }
 
         Flip();
@@ -61,6 +63,7 @@ public class Dash : MonoBehaviour
     {
         canDash = false;
         isDashing = true;
+        animator.SetBool("IsDashing", true);
         float originalGravity = rb.gravityScale;
         rb.gravityScale = 0f;
         rb.velocity = new Vector2(transform.localScale.x * dashingPower, 0f);
@@ -69,6 +72,7 @@ public class Dash : MonoBehaviour
         //tr.emitting = false;
         rb.gravityScale = originalGravity;
         isDashing = false;
+        animator.SetBool("IsDashing", false);
         yield return new WaitForSeconds(dashingCooldown);
         canDash = true;
     }

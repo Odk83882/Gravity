@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     private Rigidbody2D rb2d;
+    public Animator animator; 
     private Vector2 velocity = Vector2.zero;
     public float moveSpeed = 5f;
     public float jumpVelocity = 5f;
@@ -40,20 +41,30 @@ public class PlayerMovement : MonoBehaviour
     {
         rb2d = GetComponent<Rigidbody2D>();
     }
+    
+
+
+
 
     void Update()
     {
-        // Read input
+    // Read input
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         float verticalInput = Input.GetAxisRaw("Vertical");
+    
+    // Check if the player is colliding with a wall
+        
 
-        // Calculate movement velocity
+    
+        animator.SetFloat("Speed", Mathf.Abs(horizontalInput));
+    
+    // Calculate movement velocity
         velocity = new Vector2(horizontalInput * moveSpeed, rb2d.velocity.y);
-
-        // Check if grounded
+    
+    // Check if grounded
         isGrounded = IsGrounded();
 
-        // Jumping
+    // Jumping
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
             isJumping = true;
@@ -65,7 +76,7 @@ public class PlayerMovement : MonoBehaviour
             isJumpHeld = false;
         }
 
-        // Apply air friction
+    // Apply air friction
         if (!isGrounded)
         {
             ApplyAirFriction();
@@ -74,7 +85,7 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Apply movement and handle collisions
+    // Apply movement and handle collisions
         Vector2 remainingDelta = velocity * Time.fixedDeltaTime;
         int iter = 0;
 
@@ -83,7 +94,7 @@ public class PlayerMovement : MonoBehaviour
             CastAndMove(velocity, remainingDelta, out velocity, out remainingDelta);
         }
 
-        // Apply gravity for jumping
+    // Apply gravity for jumping
         if (isJumping && rb2d.velocity.y > 0)
         {
             if (isJumpHeld)
@@ -99,7 +110,9 @@ public class PlayerMovement : MonoBehaviour
         {
             isJumping = false;
         }
+
     }
+    
 
     void ApplyAirFriction()
     {
