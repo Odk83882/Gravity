@@ -1,9 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public SFXManager audioManager;
+    Vector2 startPos;
     private Rigidbody2D rb2d;
     public Animator animator; 
     private Vector2 velocity = Vector2.zero;
@@ -25,9 +28,11 @@ public class PlayerMovement : MonoBehaviour
     private float groundRayDistance = 0.1f;
 
     public bool isUpsideDown;
+    private Options options;
 
     private void Awake()
     {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<SFXManager>();
         if (instance != null && instance != this)
         {
             Destroy(this);
@@ -37,59 +42,58 @@ public class PlayerMovement : MonoBehaviour
             instance = this;
         }
     }
+
     void Start()
     {
         rb2d = GetComponent<Rigidbody2D>();
+        startPos = transform.position;
+        options = FindObjectOfType<Options>(); // Find the Options script in the scene
     }
-    
-
-
-
 
     void Update()
+{
+    if (!Options.isPaused)
     {
-    // Read input
+        // Read input
         animator.SetBool("IsGrounded", IsGrounded());
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         float verticalInput = Input.GetAxisRaw("Vertical");
-    
-    // Check if the player is colliding with a wall
-        
 
-    
+        // Check if the game is not paused before allowing movement input
+        if (!Options.isPaused)
+        {
+            // Calculate movement velocity
+            velocity = new Vector2(horizontalInput * moveSpeed, rb2d.velocity.y);
+        }
+
         animator.SetFloat("Speed", Mathf.Abs(horizontalInput));
-    
-    // Calculate movement velocity
-        velocity = new Vector2(horizontalInput * moveSpeed, rb2d.velocity.y);
-    
-    // Check if grounded
+
         isGrounded = IsGrounded();
 
-        
-
-    // Jumping
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
+            audioManager.PlaySFX(audioManager.jump);
+
             isJumping = true;
             isJumpHeld = true;
             rb2d.velocity = new Vector2(rb2d.velocity.x, jumpVelocity);
         }
         else if (Input.GetButtonUp("Jump"))
         {
+
             isJumpHeld = false;
         }
 
-    // Apply air friction
         if (!isGrounded)
         {
-            
             ApplyAirFriction();
         }
     }
+}
 
     void FixedUpdate()
     {
-    // Apply movement and handle collisions
+        // Apply movement and handle collisions
         Vector2 remainingDelta = velocity * Time.fixedDeltaTime;
         int iter = 0;
 
@@ -98,7 +102,7 @@ public class PlayerMovement : MonoBehaviour
             CastAndMove(velocity, remainingDelta, out velocity, out remainingDelta);
         }
 
-    // Apply gravity for jumping
+        // Apply gravity for jumping
         if (isJumping && rb2d.velocity.y > 0)
         {
             if (isJumpHeld)
@@ -114,9 +118,18 @@ public class PlayerMovement : MonoBehaviour
         {
             isJumping = false;
         }
-
     }
-    
+
+    public void Die()
+    {
+        audioManager.PlaySFX(audioManager.hitHurt);
+        Respawn();
+    }
+
+    void Respawn()
+    {
+        transform.position = startPos;
+    }
 
     void ApplyAirFriction()
     {
@@ -125,15 +138,7 @@ public class PlayerMovement : MonoBehaviour
 
     bool IsGrounded()
     {
-        Vector2 Vector2Direction = Vector2.down;
-        if (isUpsideDown == true)
-        {
-            Vector2Direction = Vector2.up;
-        }
-        else
-        {
-            Vector2Direction = Vector2.down;
-        }
+        Vector2 Vector2Direction = isUpsideDown ? Vector2.up : Vector2.down;
         RaycastHit2D hit = Physics2D.Raycast(transform.position - new Vector3(0f, 1f, 0f), Vector2Direction, groundRayDistance, groundLayer);
         Debug.DrawRay(transform.position - new Vector3(0f, 1f, 0f), Vector2.down * groundRayDistance, Color.red);
         return hit.collider != null;
@@ -162,5 +167,22 @@ public class PlayerMovement : MonoBehaviour
             newRemaining = newRemaining - Vector2.Dot(newRemaining, hit.normal) * hit.normal;
             return true;
         }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag == "Portal")
+        {
+            StartCoroutine(PortalEnter());
+        }
+    }
+
+    private IEnumerator PortalEnter()
+    {
+        audioManager.PlaySFX(audioManager.powerUp);
+
+        yield return new WaitForSeconds(0.05f);
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 }

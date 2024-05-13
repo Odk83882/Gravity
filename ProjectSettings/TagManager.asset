@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - Obstacle
+  - BulletDestroyer
+  - Portal
+  - Audio
   layers:
   - Default
   - TransparentFX

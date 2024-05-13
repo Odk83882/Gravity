@@ -18,18 +18,8 @@ public class Spikes : MonoBehaviour
         {
             Debug.Log("Hello");
 
-            Die();
+            PlayerMovement.instance.Die();
         }
 
-    }
-
-    void Die()
-    {
-        Respawn();
-    }
-
-    void Respawn()
-    {
-        transform.position = startPos;
     }
 }

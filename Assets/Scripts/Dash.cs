@@ -6,7 +6,7 @@ public class Dash : MonoBehaviour
     public Animator animator;
     private float horizontal;
     private float speed = 8f;
-
+    public SFXManager audioManager;
     private bool isFacingRight = true;
 
     private bool canDash = true;
@@ -17,6 +17,11 @@ public class Dash : MonoBehaviour
 
     [SerializeField] private Rigidbody2D rb;
     //[SerializeField] private TrailRenderer tr;
+
+    private void Start()
+    {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<SFXManager>();
+    }
 
     private void Update()
     {
@@ -64,6 +69,7 @@ public class Dash : MonoBehaviour
         canDash = false;
         isDashing = true;
         animator.SetBool("IsDashing", true);
+        audioManager.PlaySFX(audioManager.dash);
         float originalGravity = rb.gravityScale;
         rb.gravityScale = 0f;
         rb.velocity = new Vector2(transform.localScale.x * dashingPower, 0f);

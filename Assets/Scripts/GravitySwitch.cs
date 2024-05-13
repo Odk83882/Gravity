@@ -38,7 +38,7 @@ public class GravitySwitch: MonoBehaviour
         rb2D.gravityScale = 1f * gravityMultiplier;
     }
 
-    void GravityShift()
+    public void GravityShift()
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         gravityMultiplier *= -1f;
