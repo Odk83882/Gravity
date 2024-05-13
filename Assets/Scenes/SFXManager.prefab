@@ -180,3 +180,4 @@ MonoBehaviour:
   laserShoot: {fileID: 8300000, guid: 76f5e4da88aeb6f4e9a32d9a081ae699, type: 3}
   powerUp: {fileID: 8300000, guid: f46ae058c90d2094fa72bf2cb33d83a9, type: 3}
   dash: {fileID: 8300000, guid: 1978e0c8e1ad25d40b0934b46b448491, type: 3}
+  thanksForPlaying: {fileID: 8300000, guid: 7eed1f7950b2e1d4d926c50e99b9800b, type: 3}

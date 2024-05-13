@@ -30,6 +30,9 @@ public class PlayerMovement : MonoBehaviour
     public bool isUpsideDown;
     private Options options;
 
+    // Boolean flag to control player movement
+    public bool canPlayerMove = true;
+
     private void Awake()
     {
         audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<SFXManager>();
@@ -51,83 +54,108 @@ public class PlayerMovement : MonoBehaviour
     }
 
     void Update()
-{
-    if (!Options.isPaused)
     {
-        // Read input
-        animator.SetBool("IsGrounded", IsGrounded());
-        float horizontalInput = Input.GetAxisRaw("Horizontal");
-        float verticalInput = Input.GetAxisRaw("Vertical");
-
-        // Check if the game is not paused before allowing movement input
         if (!Options.isPaused)
         {
-            // Calculate movement velocity
-            velocity = new Vector2(horizontalInput * moveSpeed, rb2d.velocity.y);
-        }
+            // Read input
+            animator.SetBool("IsGrounded", IsGrounded());
 
-        animator.SetFloat("Speed", Mathf.Abs(horizontalInput));
+            // Check if the game is not paused and player can move
+            if (!Options.isPaused && canPlayerMove)
+            {
+                // Read horizontal input if player can move
+                float horizontalInput = Input.GetAxisRaw("Horizontal");
 
-        isGrounded = IsGrounded();
+                // Calculate movement velocity if player can move
+                velocity = new Vector2(horizontalInput * moveSpeed, rb2d.velocity.y);
 
-        if (Input.GetButtonDown("Jump") && isGrounded)
-        {
-            audioManager.PlaySFX(audioManager.jump);
+                animator.SetFloat("Speed", Mathf.Abs(horizontalInput));
 
-            isJumping = true;
-            isJumpHeld = true;
-            rb2d.velocity = new Vector2(rb2d.velocity.x, jumpVelocity);
-        }
-        else if (Input.GetButtonUp("Jump"))
-        {
+                isGrounded = IsGrounded();
 
-            isJumpHeld = false;
-        }
+                if (Input.GetButtonDown("Jump") && isGrounded)
+                {
+                    audioManager.PlaySFX(audioManager.jump);
 
-        if (!isGrounded)
-        {
-            ApplyAirFriction();
+                    isJumping = true;
+                    isJumpHeld = true;
+                    rb2d.velocity = new Vector2(rb2d.velocity.x, jumpVelocity);
+                }
+                else if (Input.GetButtonUp("Jump"))
+                {
+                    isJumpHeld = false;
+                }
+
+                if (!isGrounded)
+                {
+                    ApplyAirFriction();
+                }
+            }
         }
     }
-}
+
 
     void FixedUpdate()
     {
-        // Apply movement and handle collisions
-        Vector2 remainingDelta = velocity * Time.fixedDeltaTime;
-        int iter = 0;
+        if (canPlayerMove)
+        {
+            // Apply movement and handle collisions
+            Vector2 remainingDelta = velocity * Time.fixedDeltaTime;
+            int iter = 0;
 
-        while (remainingDelta.sqrMagnitude > 0 && iter++ < moveIterations)
-        {
-            CastAndMove(velocity, remainingDelta, out velocity, out remainingDelta);
-        }
+            while (remainingDelta.sqrMagnitude > 0 && iter++ < moveIterations)
+            {
+                CastAndMove(velocity, remainingDelta, out velocity, out remainingDelta);
+            }
 
-        // Apply gravity for jumping
-        if (isJumping && rb2d.velocity.y > 0)
-        {
-            if (isJumpHeld)
+            // Apply gravity for jumping
+            if (isJumping && rb2d.velocity.y > 0)
             {
-                rb2d.velocity += Vector2.up * Physics2D.gravity.y * (fallLongMult - 1) * Time.fixedDeltaTime;
+                if (isJumpHeld)
+                {
+                    rb2d.velocity += Vector2.up * Physics2D.gravity.y * (fallLongMult - 1) * Time.fixedDeltaTime;
+                }
+                else
+                {
+                    rb2d.velocity += Vector2.up * Physics2D.gravity.y * (fallShortMult - 1) * Time.fixedDeltaTime;
+                }
             }
-            else
+            else if (rb2d.velocity.y <= 0)
             {
-                rb2d.velocity += Vector2.up * Physics2D.gravity.y * (fallShortMult - 1) * Time.fixedDeltaTime;
+                isJumping = false;
             }
-        }
-        else if (rb2d.velocity.y <= 0)
-        {
-            isJumping = false;
         }
     }
 
+    // Other methods remain unchanged...
+
     public void Die()
+    {     
+        StartCoroutine(DieCoroutine());
+    }
+
+    private IEnumerator DieCoroutine()
     {
+        Debug.Log("Freezing rotation and position");
+        rb2d.constraints = RigidbodyConstraints2D.FreezeRotation | RigidbodyConstraints2D.FreezePosition;
+        canPlayerMove = false;
+
         audioManager.PlaySFX(audioManager.hitHurt);
+        animator.SetBool("hasDied", true);
+
+        yield return new WaitForSeconds(1f);
+
+        Debug.Log("Respawning");
         Respawn();
     }
 
     void Respawn()
     {
+        Debug.Log("Unfreezing position");
+        rb2d.constraints = RigidbodyConstraints2D.FreezeRotation;
+        canPlayerMove = true;
+
+        animator.SetBool("hasDied", false);
         transform.position = startPos;
     }
 

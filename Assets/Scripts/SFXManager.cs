@@ -13,6 +13,8 @@ public class SFXManager : MonoBehaviour
     public AudioClip laserShoot;
     public AudioClip powerUp;
     public AudioClip dash;
+    public AudioClip thanksForPlaying;
+
 
     // Adjust this method to manage the AudioClip lifecycle if necessary
     public void PlaySFX(AudioClip clip)
