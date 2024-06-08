@@ -6,8 +6,8 @@ using UnityEngine.UI;
 
 public class Menu : MonoBehaviour
 {
-
     SFXManager audioManager;
+
     private void Awake()
     {
         audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<SFXManager>();
@@ -21,14 +21,12 @@ public class Menu : MonoBehaviour
         SceneManager.LoadSceneAsync("lvl1");
     }
 
-    
-
     public void Quit()
     {
         Application.Quit();
-        UnityEditor.EditorApplication.isPlaying = false;
+
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
     }
-}     
+}
